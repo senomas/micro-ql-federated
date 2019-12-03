@@ -46,8 +46,8 @@
     "typescript": "^3.6.3"
   },
   "dependencies": {
-    "@apollo/gateway": "^0.11.3",
-    "@types/graphql": "^14.0.7",
+    "@apollo/federation": "^0.11.2",
+    "apollo-server-express": "^2.9.4",
     "bunyan": "^1.8.12",
     "express": "^4.17.1",
     "iltorb": "^2.4.3",
@@ -60,8 +60,8 @@
     "reflect-metadata": "^0.1.13",
     "shrink-ray-current": "^4.1.2",
     "source-map-support": "^0.5.13",
-    "type-graphql": "^0.17.5",
-    "apollo-server": "^2.9.12",
-    "apollo-server-express": "^2.9.4"
+    "type-graphql": "^0.18.0-beta.6",
+    "@apollo/gateway": "^0.11.3",
+    "@types/graphql": "^14.0.7"
   }
 }
