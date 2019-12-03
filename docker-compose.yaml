@@ -1,0 +1,35 @@
+version: "2.2"
+services:
+  redis:
+    image: redis:4.0.9-alpine
+    ports:
+      - "5006:6379"
+    depends_on:
+      - redis2
+  redis2:
+    image: redis:4.0.9-alpine
+    ports:
+      - "5007:6379"
+  mongo:
+    image: mongo:3.4.14-jessie
+    command: mongod --auth
+    ports:
+      - "5008:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=dodol123
+    volumes:
+      - mongo-data:/data/db
+      - "${DOCKER_BASE_PATH:-.}/mongo-seed.js:/docker-entrypoint-initdb.d/seed.js"
+  mongo_express:
+    image: mongo-express:0.49.0
+    depends_on:
+      - mongo
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=dodol123
+    ports:
+      - 5009:8081
+volumes:
+  mongo-data:
+    driver: local

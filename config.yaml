@@ -1,0 +1,55 @@
+logger:
+  period: 1d
+  count: 3
+  path: log
+auth:
+  secret: thisisverysecure
+  salt: d3nm4s3n0
+  curves: secp256k1
+  aesKey:
+    iterations: 191
+    hashBytes: 32
+  aesSalt:
+    iterations: 297
+    hashBytes: 16
+  loginExpiry: 120
+  # singleSession: true
+  # tokenExpiry: 1
+  # sessionExpiry: 2
+  singleSession: false
+  tokenExpiry: 30
+  sessionExpiry: 300
+  pbkdf2:
+    iterations: 573
+    hashBytes: 64
+  pbkdf2App:
+    iterations: 7473
+    hashBytes: 64
+api:
+  protocol: http
+  host: localhost
+  port: 5000
+redis:
+  host: localhost
+  port: 5006
+mongodb:
+  host: localhost
+  port: 5008
+  user: admin
+  password: dodol123
+
+keys:
+  auth:
+    pkey: |
+      -----BEGIN EC PRIVATE KEY-----
+      MHQCAQEEIK7gKuIqGu6jri+nqnUPrGLFJqcSNtRYLaD8PRXv0UVQoAcGBSuBBAAK
+      oUQDQgAEAckN6k0lflLvqIpEACUsNPubsVtHeom3YMT9ZrIGIITEukV/+S371KTg
+      yD1KC22ucwznpsffJQtEIihJcj2h3g==
+      -----END EC PRIVATE KEY-----
+  account:
+    pkey: |
+      -----BEGIN EC PRIVATE KEY-----
+      MHQCAQEEIBjo+SWvMNn0iXUCjtbUmAtiCxzf0v13GIGOfC2uuGlBoAcGBSuBBAAK
+      oUQDQgAEnpWaHslCxvRihdsihzEEGJrtZ5QVIVrkBZINy2fMMqB6P+hvjxa3Ptx8
+      JJtqID6o8sMi7V6sBt2cg39onv1JNg==
+      -----END EC PRIVATE KEY-----

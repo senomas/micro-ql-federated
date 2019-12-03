@@ -1,0 +1,67 @@
+{
+  "name": "micro-ql-federated",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/senomas/micro-ql-federated.git",
+  "author": "denmaseno <agus@senomas.com>",
+  "license": "MIT",
+  "engines": {
+    "node": "12.13.1",
+    "yarn": ">=1.19.0 < 1.20.0"
+  },
+  "scripts": {
+    "fix": "npx gulp fix",
+    "build": "npx gulp build",
+    "start": "yarn build && node dist/src/server.js",
+    "test": "npx gulp test",
+    "dev": "nodemon"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "test/**/*.ts",
+      ".git",
+      "node_modules"
+    ],
+    "watch": [
+      "src"
+    ],
+    "exec": "yarn start",
+    "ext": "ts"
+  },
+  "devDependencies": {
+    "@netflix/tslint-config": "^1.0.1",
+    "chai": "^4.2.0",
+    "chai-graphql": "^4.0.0",
+    "chai-http": "^4.3.0",
+    "gitlog": "^3.1.2",
+    "gulp": "^4.0.2",
+    "gulp-typescript": "^5.0.1",
+    "mocha": "^6.2.1",
+    "mocha-typescript": "^1.1.17",
+    "nodemon": "^1.19.2",
+    "shelljs": "^0.8.3",
+    "ts-node": "^8.4.1",
+    "tslint": "^5.20.0",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "^3.6.3"
+  },
+  "dependencies": {
+    "@apollo/gateway": "^0.11.3",
+    "@types/graphql": "^14.0.7",
+    "bunyan": "^1.8.12",
+    "express": "^4.17.1",
+    "iltorb": "^2.4.3",
+    "js-yaml": "^3.13.1",
+    "jsonwebtoken": "^8.5.1",
+    "key-encoder": "^2.0.2",
+    "mongodb": "^3.3.2",
+    "node-netstat": "^1.8.0",
+    "node-zopfli-es": "^1.0.3",
+    "reflect-metadata": "^0.1.13",
+    "shrink-ray-current": "^4.1.2",
+    "source-map-support": "^0.5.13",
+    "type-graphql": "^0.17.5",
+    "apollo-server": "^2.9.12",
+    "apollo-server-express": "^2.9.4"
+  }
+}

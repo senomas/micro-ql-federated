@@ -1,0 +1,29 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "/home/seno/Documents/microql/packet-connector"
+		},
+		{
+			"path": "/home/seno/Documents/microql/core-account-basic"
+		},
+		{
+			"path": "/home/seno/Documents/microql/mockup-core"
+		},
+		{
+			"path": "/home/seno/Documents/microql/elk"
+		},
+		{
+			"path": "/home/seno/Documents/microql/event-writer"
+		},
+		{
+			"path": "/home/seno/Documents/microql/client-react"
+		},
+		{
+			"path": "/home/seno/Documents/microql/common"
+		}
+	],
+	"settings": {}
+}
