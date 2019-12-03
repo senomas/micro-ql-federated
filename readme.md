@@ -1,6 +1,8 @@
-## REQUIREMENTS
-- node 12
-- docker
+## MODULES
+
+- [Federated](https://github.com/senomas/micro-ql-federated)
+- [Account](https://github.com/senomas/micro-ql-account)
+- [Common](https://github.com/senomas/micro-ql-common)
 
 ## INITIAL
 ```
