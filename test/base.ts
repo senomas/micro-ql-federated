@@ -34,17 +34,17 @@ if (config.logger && config.logger.path) {
 export const logger = bunyan.createLogger(
   config.logger && config.logger.path
     ? {
-        name: "test",
-        streams: [
-          {
-            type: "rotating-file",
-            ...config.logger,
-            path: `${process.env.LOGGER_PATH ||
-              config.logger.path ||
-              "."}/test.log`
-          }
-        ]
-      }
+      name: "test",
+      streams: [
+        {
+          type: "rotating-file",
+          ...config.logger,
+          path: `${process.env.LOGGER_PATH ||
+            config.logger.path ||
+            "."}/test.log`
+        }
+      ]
+    }
     : { name: "test" }
 );
 
@@ -55,58 +55,69 @@ export class BaseTest {
   public async postLogin(username, password, expiry = null) {
     values.ecdh = ecdh;
 
-    let res = await this.post(
-      `{
+    let res = await this.post(`{
       auth(clientKey: "${ecdh.getPublicKey().toString("base64")}") {
         serverKey
       }
-    }`,
-      { token: null }
-    );
+      account {
+        errors {
+          path
+          name
+          value
+        }
+      }
+    }`);
     let val = res.body;
     expect(res.status, res.log).to.eql(200);
-    expect(res.body, res.log).to.not.haveOwnProperty("errors");
+    expect(res.body.data.account.errors, res.log).to.eql(null);
     expect(val, res.log).to.haveOwnProperty("data");
     expect(val.data, res.log).to.haveOwnProperty("auth");
     expect(val.data.auth, res.log).to.haveOwnProperty("serverKey");
     const serverKey = val.data.auth.serverKey;
 
-    const secretkey = ecdh.computeSecret(Buffer.from(serverKey, "base64"));
-    const aesKey = crypto.pbkdf2Sync(
-      secretkey,
-      this.config.auth.salt,
-      this.config.auth.aesKey.iterations,
-      this.config.auth.aesKey.hashBytes,
-      "sha512"
+    const secretkey = ecdh.computeSecret(
+      Buffer.from(serverKey, "base64")
     );
-    const aesSalt = crypto.pbkdf2Sync(
-      ecdh.getPublicKey(),
-      this.config.auth.salt,
-      this.config.auth.aesSalt.iterations,
-      this.config.auth.aesSalt.hashBytes,
-      "sha512"
-    );
+    const aesKey = crypto
+      .pbkdf2Sync(
+        secretkey,
+        this.config.auth.salt,
+        this.config.auth.aesKey.iterations,
+        this.config.auth.aesKey.hashBytes,
+        "sha512"
+      );
+    const aesSalt = crypto
+      .pbkdf2Sync(
+        ecdh.getPublicKey(),
+        this.config.auth.salt,
+        this.config.auth.aesSalt.iterations,
+        this.config.auth.aesSalt.hashBytes,
+        "sha512"
+      );
     let aes = crypto.createCipheriv("aes-256-ctr", aesKey, aesSalt);
     const xlogin = Buffer.concat([
       aes.update(Buffer.from(username, "utf8")),
       aes.final()
     ]).toString("base64");
 
-    res = await this.post(
-      `{
+    res = await this.post(`{
       auth(clientKey: "${ecdh.getPublicKey().toString("base64")}") {
-        salt(xlogin: "${xlogin}")
+        salt(xlogin: "${xlogin}") {
+          value
+          errors {
+            name
+          }
+        }
       }
-    }`,
-      { token: null }
-    );
+    }`);
     val = res.body;
     expect(res.status, res.log).to.eql(200);
-    expect(res.body, res.log).to.not.haveOwnProperty("errors");
     expect(val, res.log).to.haveOwnProperty("data");
     expect(val.data, res.log).to.haveOwnProperty("auth");
-    expect(val.data.auth, res.log).to.haveOwnProperty("salt");
-    const xsalt = val.data.auth.salt;
+    expect(val.data.auth.salt, res.log).to.not.eql(null);
+    expect(val.data.auth.salt.value, res.log).to.not.eql(null);
+    expect(val.data.auth.salt.errors, res.log).to.eql(null);
+    const xsalt = val.data.auth.salt.value[0];
 
     const aesd = crypto.createDecipheriv("aes-256-ctr", aesKey, aesSalt);
     const salt = Buffer.concat([
@@ -114,7 +125,6 @@ export class BaseTest {
       aesd.final()
     ]).toString("utf8");
 
-    aes = crypto.createCipheriv("aes-256-ctr", aesKey, aesSalt);
     const hpassword = crypto.pbkdf2Sync(
       password,
       Buffer.from(salt, "base64"),
@@ -123,23 +133,28 @@ export class BaseTest {
       "sha512"
     );
 
+    aes = crypto.createCipheriv("aes-256-ctr", aesKey, aesSalt);
     const xhpassword = Buffer.concat([
       aes.update(hpassword),
       aes.final()
     ]).toString("base64");
 
-    res = await this.post(
-      `{
+    res = await this.post(`{
       auth(clientKey: "${ecdh.getPublicKey().toString("base64")}") {
-        login(xlogin: "${xlogin}", xhpassword: "${xhpassword}"${expiry ? `, expiry: ${expiry}` : ""}) {
-          seq token
+        login(salt: [], xlogin: "${xlogin}", xhpassword: "${xhpassword}"${expiry ? `, expiry: ${expiry}` : ""}) {
+          seq
+          token
+          errors {
+            path
+            name
+          }
         }
       }
-    }`,
-      { token: null }
-    );
+    }`);
     expect(res.status, res.log).to.eql(200);
-    expect(res.body, res.log).to.not.haveOwnProperty("errors");
+    expect(res.body.data.auth.login, res.log).to.not.eql(null);
+    expect(res.body.data.auth.login.errors, res.log).to.eql(null);
+    expect(res.body.data.auth.login.token, res.log).to.not.eql(null);
     values.seq = parseInt(res.body.data.auth.login.seq, 10);
     values.token = res.body.data.auth.login.token;
   }
@@ -147,12 +162,20 @@ export class BaseTest {
   public async postLogout() {
     const res = await this.post(`
       mutation {
-        logout
+        logout {
+          value
+          errors {
+            path
+            name
+          }
+        }
       }`,
       { token: values.token }
     );
     expect(res.status, res.log).to.eql(200);
-    expect(res.body, res.log).to.not.haveOwnProperty("errors");
+    expect(res.body.data.logout, res.log).to.not.eql(null);
+    expect(res.body.data.logout.value, res.log).to.eql(true);
+    expect(res.body.data.logout.errors, res.log).to.eql(null);
   }
 
   public async post(query: string, { token } = { token: values.token }) {

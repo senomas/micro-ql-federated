@@ -6,8 +6,8 @@
   "author": "denmaseno <agus@senomas.com>",
   "license": "MIT",
   "engines": {
-    "node": "12.13.1",
-    "yarn": ">=1.19.0 < 1.20.0"
+    "node": "12.16.0",
+    "yarn": "1.21.1"
   },
   "scripts": {
     "fix": "npx gulp fix",

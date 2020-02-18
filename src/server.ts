@@ -41,11 +41,15 @@ class BasicLogging extends GraphQLExtension {
 }
 
 export async function bootstrap() {
+  const serviceList = Object.entries(process.env).filter(([k, _]) => k.startsWith("SERVICE_")).map(([k, url]) => {
+    return {
+      name: k.substring(8),
+      url
+    };
+  });
+  logger.info({ serviceList }, "serviceList");
   const gateway = new ApolloGateway({
-    serviceList: [
-      { name: "account", url: 'http://localhost:5001/graphql' },
-      { name: 'common', url: 'http://localhost:5002/graphql' }
-    ],
+    serviceList,
     buildService({ name, url }) {
       return new AuthenticatedDataSource({ url });
     }

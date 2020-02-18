@@ -1,27 +1,40 @@
 const { dest, src } = require("gulp");
 const shell = require("shelljs");
+const { spawn } = require("child_process");
 const args = require("yargs").argv;
 const gitlog = require("gitlog");
 const fs = require("fs");
 const netstat = require('node-netstat');
-const jwt = require("jsonwebtoken");
 
 const project = "mmw";
-const dockerComposePath = ".";
-
-async function tsc() {
-  await shell.exec("npx tsc -p tsconfig.build.json", {
-    async: false
-  });
-}
+const dockerComposePath = "../federated";
 
 async function build() {
+  await shell.exec("npx gulp run", {
+    cwd: "../account",
+    env: {
+      PATH: process.env.PATH,
+      APP_NAME: "account",
+      NODE_ENV: "development",
+      PORT: 5001
+    },
+    async: true
+  });
+  await waitPorts([5001])
   await shell.exec("yarn --frozen-lockfile", {
     async: false
   });
-  await fix();
-  await tsc();
-  await copyData();
+  await shell.exec("tslint --fix --project .", {
+    async: false
+  });
+  await shell.exec("npx tsc -p tsconfig.build.json", {
+    async: false
+  });
+  await new Promise(resolve => {
+    src("src/data/*.{json,yaml}")
+      .pipe(dest("dist/data"))
+      .on("end", resolve);
+  });
   const commits = gitlog({
     repo: ".",
     number: 10,
@@ -33,12 +46,11 @@ async function build() {
   );
 }
 
-async function copyData() {
-  await new Promise(resolve => {
-    src("src/data/*.{json,yaml}")
-      .pipe(dest("dist/data"))
-      .on("end", resolve);
+async function rebuild() {
+  await shell.exec("rm -rf log dist", {
+    async: false
   });
+  await build();
 }
 
 async function dockerUp() {
@@ -56,7 +68,7 @@ async function dockerDown() {
 }
 
 async function kill() {
-  await killPorts([5000])
+  await killPorts([5000, 5001])
 }
 
 async function run() {
@@ -65,10 +77,12 @@ async function run() {
   await shell.exec("node dist/server.js", {
     env: {
       PATH: process.env.PATH,
+      APP_NAME: "federated",
       NODE_ENV: "development",
+      SERVICE_account: "http://localhost:5001/graphql",
       PORT: 5000
     },
-    async: false
+    async: true
   });
 }
 
@@ -128,18 +142,14 @@ async function waitPorts(ports) {
   }
 }
 
-async function fix() {
-  await shell.exec("tslint --fix --project .", {
-    async: false
-  });
-}
-
 async function test() {
   await kill();
   await shell.exec("rm -rf log dist", {
     async: false
   });
   await run();
+  console.log("waiting server...");
+  await waitPorts([5001])
   console.log(
     `npx mocha -r ts-node/register ${
     args.bail ? "-b" : ""
@@ -152,6 +162,7 @@ async function test() {
     {
       env: {
         PATH: process.env.PATH,
+        NODE_ENV: "test",
         TEST_SERVER: `http://localhost:5000`
       },
       async: false
@@ -160,71 +171,12 @@ async function test() {
   await kill();
 }
 
-async function genkey() {
-  const gen = await shell.exec("openssl ecparam -name secp256k1 -genkey -noout", {
-    async: false,
-    silent: true
-  });
-  const key = (await gen.exec("openssl ec -pubout", {
-    async: false,
-    silent: true
-  })).stdout.split("\n").reduce((acc, v) => {
-    let state = acc.state;
-    const ln = acc.ln;
-    if (state === 0) {
-      if (v.startsWith("-----BEGIN PUBLIC KEY")) {
-        ln.push(v);
-        state = 1;
-      }
-    } else if (state === 1) {
-      ln.push(v);
-      if (v.startsWith("-----END PUBLIC KEY")) {
-        state = 2;
-      }
-    }
-    return { state, ln };
-  }, { state: 0, ln: [] }).ln.join("\n");
-  const pkey = gen.stdout.split("\n").reduce((acc, v) => {
-    let state = acc.state;
-    const ln = acc.ln;
-    if (state === 0) {
-      if (v.startsWith("-----BEGIN EC PRIVATE KEY")) {
-        ln.push(v);
-        state = 1;
-      }
-    } else if (state === 1) {
-      ln.push(v);
-      if (v.startsWith("-----END EC PRIVATE KEY")) {
-        state = 2;
-      }
-    }
-    return { state, ln };
-  }, { state: 0, ln: [] }).ln.join("\n");
-  console.log(`key: |\n${
-    key.split("\n").map(v => `  ${v}`).join("\n")
-    }\npkey: |\n${
-    pkey.split("\n").map(v => `  ${v}`).join("\n")
-    }`
-  );
-  const token = jwt.sign({
-    n: "demo"
-  }, pkey, {
-    algorithm: "ES256",
-  });
-  console.log("TOKEN", token);
-  const data = jwt.verify(token, key);
-  console.log("TOKEN-DATA", JSON.stringify(data, undefined, 2));
-}
-
 module.exports = {
-  fix,
-  tsc,
-  copyData,
   build,
+  rebuild,
   dockerUp,
   dockerDown,
   run,
   kill,
-  test,
-  genkey
+  test
 };
