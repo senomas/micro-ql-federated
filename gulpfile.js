@@ -6,6 +6,9 @@ const fs = require("fs");
 const netstat = require('node-netstat');
 const jwt = require("jsonwebtoken");
 
+const project = "mmw";
+const dockerComposePath = ".";
+
 async function tsc() {
   await shell.exec("npx tsc -p tsconfig.build.json", {
     async: false
@@ -39,15 +42,15 @@ async function copyData() {
 }
 
 async function dockerUp() {
-  await shell.exec("docker-compose -p micro-ql up -d", {
-    cwd: "../account",
+  await shell.exec(`docker-compose -p ${project} up -d`, {
+    cwd: dockerComposePath,
     async: false
   });
 }
 
 async function dockerDown() {
-  await shell.exec("docker-compose -p micro-ql down", {
-    cwd: "../account",
+  await shell.exec(`docker-compose -p ${project} down`, {
+    cwd: dockerComposePath,
     async: false
   });
 }
