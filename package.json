@@ -49,7 +49,7 @@
     "@apollo/federation": "^0.11.2",
     "@apollo/gateway": "^0.11.3",
     "@types/graphql": "^14.0.7",
-    "apollo-server-express": "^2.9.4",
+    "apollo-server-express": "^2.14.2",
     "bunyan": "^1.8.12",
     "express": "^4.17.1",
     "iltorb": "^2.4.3",
