@@ -39,7 +39,7 @@
     "mocha": "^6.2.1",
     "mocha-typescript": "^1.1.17",
     "nodemon": "^1.19.2",
-    "shelljs": "^0.8.3",
+    "shelljs": "^0.8.5",
     "ts-node": "^8.4.1",
     "tslint": "^5.20.0",
     "tslint-config-prettier": "^1.18.0",
