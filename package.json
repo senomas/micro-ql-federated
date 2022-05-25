@@ -33,7 +33,7 @@
     "chai": "^4.2.0",
     "chai-graphql": "^4.0.0",
     "chai-http": "^4.3.0",
-    "gitlog": "^3.1.2",
+    "gitlog": "^4.0.4",
     "gulp": "^4.0.2",
     "gulp-typescript": "^5.0.1",
     "mocha": "^6.2.1",
